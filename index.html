@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b0d12" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Paradigm" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+  <link rel="icon" type="image/png" href="icons/icon-512.png" />
+  <title>Paradigm — system design cards</title>
+  <link rel="stylesheet" href="css/app.css" />
+</head>
+<body>
+  <div id="app">
+
+    <!-- ============ TODAY ============ -->
+    <main id="view-today" class="view">
+      <header class="view-header">
+        <div class="brand">Paradigm</div>
+        <div class="streak" id="streak-pill">🔥 0</div>
+      </header>
+      <div class="crunch-banner hidden" id="crunch-banner"></div>
+      <div class="install-hint hidden" id="install-hint">
+        <button class="install-hint-close" id="install-hint-close" aria-label="dismiss">✕</button>
+        <div class="install-hint-body">Add Paradigm to your home screen — tap <b>Share</b> <svg class="share-glyph" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v13M8 7l4-4 4 4M5 12v7a1 1 0 001 1h12a1 1 0 001-1v-7"/></svg> then <b>Add to Home Screen</b>. It opens full-screen and works offline.</div>
+      </div>
+      <section class="today-hero">
+        <div class="due-count" id="due-count">0</div>
+        <div class="due-label" id="due-label">cards due today</div>
+        <div class="due-breakdown" id="due-breakdown"></div>
+      </section>
+      <section class="today-actions">
+        <button class="btn-primary" id="btn-start-review">Start review</button>
+        <button class="btn-primary hidden" id="btn-caught-up">Take a micro-quiz →</button>
+        <button class="btn-ghost" id="btn-quick-session">5-minute session</button>
+        <button class="btn-text" id="btn-interview-date">🎯 Set interview date</button>
+      </section>
+      <section class="today-hint" id="today-hint"></section>
+    </main>
+
+    <!-- ============ LIBRARY ============ -->
+    <main id="view-library" class="view hidden">
+      <header class="view-header"><div class="brand">Library</div></header>
+      <div id="bookmarks-row"></div>
+      <div id="deck-list"></div>
+    </main>
+
+    <!-- ============ PROGRESS ============ -->
+    <main id="view-progress" class="view hidden">
+      <header class="view-header"><div class="brand">Progress</div></header>
+      <section class="readiness">
+        <div class="readiness-ring" id="readiness-ring">
+          <div class="readiness-num" id="readiness-num">–</div>
+        </div>
+        <div class="readiness-label" id="readiness-label">Start reviewing to build your readiness score</div>
+      </section>
+      <h2 class="section-title">Review activity</h2>
+      <div class="heatmap" id="heatmap"></div>
+      <h2 class="section-title">Mastery by track</h2>
+      <div id="mastery-list"></div>
+      <h2 class="section-title" id="weakest-title">Weakest cards</h2>
+      <div id="weakest-list"></div>
+      <h2 class="section-title">Study settings</h2>
+      <section class="study-settings">
+        <label for="minimum-tier-select">
+          <span class="setting-name">Starting level</span>
+          <span class="setting-help">Today includes this level and above. Every card remains available in Library.</span>
+        </label>
+        <select id="minimum-tier-select" aria-label="Starting card level">
+          <option value="L3">L3 · Early career</option>
+          <option value="L4">L4 · Mid-level</option>
+          <option value="L5">L5 · Senior</option>
+          <option value="L6">L6 · Staff</option>
+          <option value="L7">L7 · Senior Staff+</option>
+        </select>
+      </section>
+      <section class="progress-footer">
+        <div class="stat-row" id="stat-row"></div>
+        <div class="footer-btn-row">
+          <button class="btn-ghost" id="btn-export">Export data</button>
+          <button class="btn-ghost" id="btn-import">Import data</button>
+        </div>
+        <button class="btn-ghost btn-feedback" id="btn-feedback">⚑ Report a problem or idea</button>
+        <button class="btn-danger-ghost" id="btn-reset">Reset local data</button>
+        <input type="file" id="import-file" accept="application/json" class="hidden" />
+      </section>
+    </main>
+
+    <!-- ============ TAB BAR ============ -->
+    <nav id="tabbar" role="tablist" aria-label="Main navigation">
+      <button class="tab active" data-view="today" role="tab" aria-selected="true"><span class="tab-icon" aria-hidden="true">▣</span>Today</button>
+      <button class="tab" data-view="library" role="tab" aria-selected="false"><span class="tab-icon" aria-hidden="true">▤</span>Library</button>
+      <button class="tab" data-view="progress" role="tab" aria-selected="false"><span class="tab-icon" aria-hidden="true">◔</span>Progress</button>
+    </nav>
+
+    <!-- ============ REVIEW SESSION ============ -->
+    <div id="review-overlay" class="overlay hidden">
+      <header class="session-header">
+        <button class="btn-close" id="btn-end-session" aria-label="End session">✕</button>
+        <button class="btn-close btn-undo hidden" id="btn-undo" aria-label="Undo last grade">↶</button>
+        <div class="session-progress" role="progressbar" aria-label="Session progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="session-progress-fill" id="session-progress-fill"></div></div>
+        <div class="session-count" id="session-count"></div>
+      </header>
+      <div class="card-canvas" id="card-canvas" aria-live="polite">
+        <div class="card-stack-ghost ghost-2" id="ghost-2" aria-hidden="true"></div>
+        <div class="card-stack-ghost ghost-1" id="ghost-1" aria-hidden="true"></div>
+        <div class="card-holder" id="card-holder">
+          <div class="card" id="card" role="group" tabindex="0">
+            <div class="card-face card-front" id="card-front"></div>
+            <div class="card-face card-back" id="card-back" aria-hidden="true"></div>
+          </div>
+          <div class="scroll-more hidden" id="scroll-more" aria-hidden="true">⌄</div>
+        </div>
+        <div class="swipe-hint swipe-hint-left" id="hint-left" aria-hidden="true">AGAIN</div>
+        <div class="swipe-hint swipe-hint-right" id="hint-right" aria-hidden="true">GOOD</div>
+        <div class="swipe-hint swipe-hint-up" id="hint-up" aria-hidden="true">WHY</div>
+      </div>
+      <div class="grade-row hidden" id="grade-row" role="group" aria-label="Rate your recall">
+        <button class="grade-pill grade-again" data-grade="1" aria-label="Again">Again<span id="ivl-1"></span></button>
+        <button class="grade-pill grade-hard" data-grade="2" aria-label="Hard">Hard<span id="ivl-2"></span></button>
+        <button class="grade-pill grade-good" data-grade="3" aria-label="Good">Good<span id="ivl-3"></span></button>
+        <button class="grade-pill grade-easy" data-grade="4" aria-label="Easy">Easy<span id="ivl-4"></span></button>
+      </div>
+      <div class="flip-hint" id="flip-hint">tap to flip · swipe ← again · → good · ↑ why</div>
+    </div>
+
+    <!-- ============ EXPLANATION SHEET ============ -->
+    <div id="sheet-backdrop" class="hidden"></div>
+    <div id="explain-sheet" class="hidden">
+      <div class="sheet-grip"></div>
+      <div class="sheet-body" id="sheet-body"></div>
+    </div>
+
+    <!-- ============ DIAGRAM VIEWER ============ -->
+    <div id="diagram-viewer" class="hidden">
+      <button class="btn-close viewer-close" id="btn-close-viewer">✕</button>
+      <div class="viewer-canvas" id="viewer-canvas"><img id="viewer-img" alt="" draggable="false" /></div>
+      <div class="viewer-hint">pinch / scroll to zoom · drag to pan · double-tap to reset</div>
+    </div>
+
+    <!-- ============ INTERVIEW DATE SHEET ============ -->
+    <div id="date-backdrop" class="hidden"></div>
+    <div id="date-sheet" class="hidden">
+      <div class="sheet-grip"></div>
+      <div class="date-sheet-body">
+        <h3>Interview date</h3>
+        <p class="date-sub">New-card intake ramps up as the date approaches (10/day baseline → 25/day in the final week).</p>
+        <input type="date" id="interview-date-input" />
+        <div class="date-actions">
+          <button class="btn-ghost" id="btn-clear-date">Clear</button>
+          <button class="btn-primary" id="btn-save-date">Save</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ QUIZ ============ -->
+    <div id="quiz-overlay" class="overlay hidden">
+      <header class="session-header">
+        <button class="btn-close" id="btn-end-quiz">✕</button>
+        <div class="session-progress"><div class="session-progress-fill" id="quiz-progress-fill"></div></div>
+        <div class="session-count" id="quiz-count"></div>
+      </header>
+      <div class="quiz-body" id="quiz-body"></div>
+    </div>
+
+    <!-- ============ ONBOARDING ============ -->
+    <div id="onboarding" class="hidden">
+      <div class="onboard-inner">
+        <div class="onboard-logo">▣</div>
+        <h1>Paradigm</h1>
+        <p class="onboard-pitch">System design prep that fits in the gaps of your day.<br/>Five minutes to revise beats thirty on reels.</p>
+        <fieldset class="onboard-levels">
+          <legend>Where should your review start?</legend>
+          <p>Today will include your level and everything above it.</p>
+          <label><input type="radio" name="onboard-minimum-tier" value="L3" checked><span><b>L3</b> Early career · foundations</span></label>
+          <label><input type="radio" name="onboard-minimum-tier" value="L4"><span><b>L4</b> Mid-level · builder</span></label>
+          <label><input type="radio" name="onboard-minimum-tier" value="L5"><span><b>L5</b> Senior · architect</span></label>
+          <label><input type="radio" name="onboard-minimum-tier" value="L6"><span><b>L6</b> Staff · operator</span></label>
+          <label><input type="radio" name="onboard-minimum-tier" value="L7"><span><b>L7</b> Senior Staff+ · strategy</span></label>
+        </fieldset>
+        <div class="onboard-gesture-hint">
+          Tap to flip · swipe to grade · swipe up for the full explanation
+        </div>
+        <button class="btn-primary" id="btn-onboard-done">Start with today's cards</button>
+      </div>
+    </div>
+
+    <div id="toast" class="hidden"></div>
+    <div id="session-done" class="hidden">
+      <div class="done-emoji">✦</div>
+      <div class="done-title" id="done-title">Session complete</div>
+      <div class="done-sub" id="done-sub"></div>
+      <button class="btn-primary" id="btn-done-close">Done</button>
+    </div>
+  </div>
+
+  <script src="js/analytics.js"></script>
+  <script src="data/content.js"></script>
+  <script src="js/fsrs.js"></script>
+  <script src="js/levels.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

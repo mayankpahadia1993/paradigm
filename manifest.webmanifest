@@ -1,0 +1,13 @@
+{
+  "name": "Paradigm — system design cards",
+  "short_name": "Paradigm",
+  "description": "Spaced-repetition system design interview prep, from new grad to principal.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0b0d12",
+  "theme_color": "#0b0d12",
+  "icons": [
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/apple-touch-icon.png", "sizes": "180x180", "type": "image/png" }
+  ]
+}
