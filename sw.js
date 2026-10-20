@@ -3,7 +3,7 @@
 // (?v= query param), so a new content push refreshes the cache. SHELL_REV bumps
 // it for app-shell changes that don't come with new content.
 const VERSION = new URL(self.location).searchParams.get("v") || "0";
-const SHELL_REV = 2; // 2: Mystico sting (js/sting.js)
+const SHELL_REV = 3; // 3: Public support alias
 const CACHE = `paradigm-v${VERSION}-s${SHELL_REV}`;
 
 const SHELL = [

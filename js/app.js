@@ -14,7 +14,7 @@
     "post-mortem": "var(--type-post-mortem)",
   };
   const STREAK_MILESTONES = [3, 7, 14, 30, 50, 100];
-  const FEEDBACK_EMAIL = "mp27try@gmail.com";
+  const FEEDBACK_EMAIL = "support@mysticoai.com";
 
   // "Dispute this card" (PRD §13) — prefilled feedback email
   function feedbackUrl(card) {
